@@ -11,6 +11,8 @@ import (
 	"survey-platform/internal/services"
 )
 
+var ApiVersion = "1.0.0"
+
 type Response struct {
 	Message    string      `json:"success,omitempty"`
 	Data       interface{} `json:"data,omitempty"`
@@ -51,7 +53,7 @@ func (a *SurveyApp) SetupRoutes() *gin.Engine {
 }
 
 func (a *SurveyApp) HealthCheck(c *gin.Context) {
-	c.JSONP(http.StatusOK, Response{Message: "service is up"})
+	c.JSONP(http.StatusOK, Response{Message: "service is up", ApiVersion: ApiVersion})
 }
 
 // CreateSurvey is the http handler function for handling the request
@@ -60,33 +62,33 @@ func (a *SurveyApp) CreateSurvey(c *gin.Context) {
 	err := c.ShouldBindJSON(&survey)
 	if err != nil {
 		log.Println("error while reading survey body", err)
-		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "malformed body"})
+		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "malformed body", ApiVersion: ApiVersion})
 		return
 	}
 	newSurvey, err := a.surveyService.CreateSurvey(survey)
 	if err != nil {
 		log.Println("error while reading survey body", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while creating survey " + err.Error()})
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while creating survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	}
-	c.JSONP(http.StatusCreated, Response{Message: "survey created", Data: newSurvey})
+	c.JSONP(http.StatusCreated, Response{Message: "survey created", Data: newSurvey, ApiVersion: ApiVersion})
 }
 
 func (a *SurveyApp) GetSurvey(c *gin.Context) {
 	id, err := ksuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("error while parsing surveyID", err)
-		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id"})
+		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id", ApiVersion: ApiVersion})
 		return
 	}
 	survey, err := a.surveyService.GetSurvey(id)
 	if err != nil && err == repositories.ErrNotFound {
 		log.Println("survey not found while getting survey", id.String())
-		c.JSONP(http.StatusNotFound, Response{Message: "error while reading survey " + err.Error()})
+		c.JSONP(http.StatusNotFound, Response{Message: "error while reading survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	} else if err != nil {
 		log.Println("error while getting survey", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while reading survey " + err.Error()})
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while reading survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	}
 	c.JSONP(http.StatusOK, Response{Message: "success", Data: survey})
@@ -96,47 +98,47 @@ func (a *SurveyApp) UpdateSurvey(c *gin.Context) {
 	id, err := ksuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("error while parsing surveyID", err)
-		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id"})
+		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id", ApiVersion: ApiVersion})
 		return
 	}
 	var survey models.Survey
 	err = c.ShouldBindJSON(&survey)
 	if err != nil {
 		log.Println("error while reading survey body", err)
-		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "malformed body"})
+		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "malformed body", ApiVersion: ApiVersion})
 		return
 	}
 	updatedSurvey, err := a.surveyService.UpdateSurvey(id, survey)
 	if err != nil && err == repositories.ErrNotFound {
 		log.Println("survey not found while updating survey", id.String())
-		c.JSONP(http.StatusNotFound, Response{Message: "error while updating survey " + err.Error()})
+		c.JSONP(http.StatusNotFound, Response{Message: "error while updating survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	} else if err != nil {
 		log.Println("error while updating survey", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while updating survey " + err.Error()})
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while updating survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	}
-	c.JSONP(http.StatusOK, Response{Message: "survey updated", Data: updatedSurvey})
+	c.JSONP(http.StatusOK, Response{Message: "survey updated", Data: updatedSurvey, ApiVersion: ApiVersion})
 }
 
 func (a *SurveyApp) DeleteSurvey(c *gin.Context) {
 	id, err := ksuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("error while parsing surveyID", err)
-		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id"})
+		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id", ApiVersion: ApiVersion})
 		return
 	}
 	err = a.surveyService.DeleteSurvey(id)
 	if err != nil && err == repositories.ErrNotFound {
 		log.Println("survey not found while deleting survey", id.String())
-		c.JSONP(http.StatusNotFound, Response{Message: "error while deleting survey " + err.Error()})
+		c.JSONP(http.StatusNotFound, Response{Message: "error while deleting survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	} else if err != nil {
 		log.Println("error while getting survey", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while deleting survey " + err.Error()})
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while deleting survey " + err.Error(), ApiVersion: ApiVersion})
 		return
 	}
-	c.JSONP(http.StatusNoContent, Response{Message: "survey deleted"})
+	c.JSONP(http.StatusNoContent, Response{Message: "survey deleted", ApiVersion: ApiVersion})
 }
 
 func (a *SurveyApp) GetAllSurveys(c *gin.Context) {
@@ -160,31 +162,31 @@ func (a *SurveyApp) SaveResponse(c *gin.Context) {
 	_, err = a.surveyService.SaveResponse(response)
 	if err != nil && err == repositories.ErrNotFound {
 		log.Println("survey not found while saving response", response.SurveyID.String())
-		c.JSONP(http.StatusNotFound, Response{Message: "error while saving response " + err.Error()})
+		c.JSONP(http.StatusNotFound, Response{Message: "error while saving response " + err.Error(), ApiVersion: ApiVersion})
 		return
 	} else if err != nil {
 		log.Println("error while saving survey response", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while saving survey response " + err.Error()})
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while saving survey response " + err.Error(), ApiVersion: ApiVersion})
 		return
 	}
-	c.JSONP(http.StatusCreated, Response{Message: "saved response"})
+	c.JSONP(http.StatusCreated, Response{Message: "saved response", ApiVersion: ApiVersion})
 }
 
 func (a *SurveyApp) GetResponses(c *gin.Context) {
 	id, err := ksuid.Parse(c.Query("survey_id"))
 	if err != nil {
 		log.Println("error while parsing surveyID", err)
-		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id"})
+		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "invalid survey id", ApiVersion: ApiVersion})
 		return
 	}
 	responses, err := a.surveyService.GetResponses(id)
 	if err != nil && err == repositories.ErrNotFound {
 		log.Println("survey not found while fetching responses", id.String())
-		c.JSONP(http.StatusNotFound, Response{Message: "error while fetching responses " + err.Error()})
+		c.JSONP(http.StatusNotFound, Response{Message: "error while fetching responses " + err.Error(), ApiVersion: ApiVersion})
 		return
 	} else if err != nil {
 		log.Println("error while fetching responses for survey", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while fetching responses"})
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while fetching responses", ApiVersion: ApiVersion})
 		return
 	}
 	c.JSONP(http.StatusOK, Response{Message: "success", Data: responses})

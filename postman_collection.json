@@ -1,0 +1,208 @@
+{
+	"info": {
+		"_postman_id": "7c396fd7-a9d3-4408-b7ab-bedafb45bd96",
+		"name": "survey app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "survey",
+			"item": [
+				{
+					"name": "create survey",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"new survey4\",\n    \"questions\": [\n        {\n            \"question\": \"is this a good product?\"\n        },\n        {\n            \"question\": \"would you recommend this product to your friend?\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/survey",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"survey"
+							]
+						},
+						"description": "survey creation"
+					},
+					"response": []
+				},
+				{
+					"name": "get all surveys",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/survey",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"survey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update survey",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"good survey\",\n    \"questions\": [\n        {\n            \"question\": \"is this a good product to sell?\"\n        },\n        {\n            \"question\": \"would you recommend this product to your friend?\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/survey/:survey_id",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"survey",
+								":survey_id"
+							],
+							"variable": [
+								{
+									"key": "survey_id",
+									"value": "1uid5BVSSs8kCdUI6iCG7maCRrH"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete survey",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/survey/:survey_id",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"survey",
+								":survey_id"
+							],
+							"variable": [
+								{
+									"key": "survey_id",
+									"value": "1uid5BVSSs8kCdUI6iCG7maCRrH"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get survey by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/survey/:survey_id",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"survey",
+								":survey_id"
+							],
+							"variable": [
+								{
+									"key": "survey_id",
+									"value": "1uhHgw6Cq901dMCDodLdsfh8VNf"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "response",
+			"item": [
+				{
+					"name": "create response",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"survey_id\": \"1uhGmccak2zqtzZNOO2FEhD49UD\",\n    \"answers\": [\n        {\n            \"question_id\": \"1uhIBxDOpHETOFkwFWf7hkjBwVb\",\n            \"answer\": true\n        },\n        {\n            \"question_id\": \"1uhHtPqtoMh2OuxrNWloV83E9rr\",\n            \"answer\": false\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/response",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"response"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get responses for a survey",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/response?survey_id=1uhGmccak2zqtzZNOO2FEhD49UD",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"response"
+							],
+							"query": [
+								{
+									"key": "survey_id",
+									"value": "1uhGmccak2zqtzZNOO2FEhD49UD"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "health check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_HOST}}",
+					"host": [
+						"{{API_HOST}}"
+					]
+				},
+				"description": "health check"
+			},
+			"response": []
+		}
+	]
+}

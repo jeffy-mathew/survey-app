@@ -4,6 +4,7 @@ package timegenerator
 
 import "time"
 
+//TimeGenInterface is used to introduce mock capabilities in service layer
 type TimeGenInterface interface {
 	Now() time.Time
 }

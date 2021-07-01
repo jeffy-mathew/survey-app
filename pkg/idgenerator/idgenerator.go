@@ -4,6 +4,7 @@ package idgenerator
 
 import "github.com/segmentio/ksuid"
 
+//IDGenerator is used to introduce mock capabilities in service layer
 type IDGenerator interface {
 	Generate() ksuid.KSUID
 }
