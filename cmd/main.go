@@ -13,6 +13,8 @@ import (
 	"survey-platform/internal/repositories/responserepo"
 	"survey-platform/internal/repositories/surveyrepo"
 	"survey-platform/internal/services/surveyservice"
+	"survey-platform/pkg/idgenerator/ksuidgenerator"
+	"survey-platform/pkg/timegenerator/actualtimegenerator"
 	"syscall"
 	"time"
 )
@@ -74,7 +76,9 @@ func main() {
 	}
 	surveyRepo := surveyrepo.NewSurveyRepo(dbEntry.Surveys)
 	responseRepo := responserepo.NewResponseRepo(dbEntry.Responses)
-	surveyService := surveyservice.NewSurveyService(3, surveyRepo, responseRepo)
+	idGenerator := ksuidgenerator.NewKSUIDGenerator()
+	timeGenerator := actualtimegenerator.NewActualTimeGenerator()
+	surveyService := surveyservice.NewSurveyService(3, surveyRepo, responseRepo, idGenerator, timeGenerator)
 	surveyApp := app.NewSurveyApp(jsonDB, surveyService)
 	defer func() {
 		if err := recover(); err != nil {

@@ -214,6 +214,7 @@ func TestSurveyRepo_GetAll(t *testing.T) {
 		surveyID1, surveyID2 := ksuid.New(), ksuid.New()
 		q1ID1, q1ID2, q2ID1, q2ID2 := ksuid.New(), ksuid.New(), ksuid.New(), ksuid.New()
 		survey1 := models.Survey{
+			Name:      "new survey1",
 			ID:        surveyID1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -229,6 +230,7 @@ func TestSurveyRepo_GetAll(t *testing.T) {
 			},
 		}
 		survey2 := models.Survey{
+			Name:      "new survey 2",
 			ID:        surveyID2,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -249,11 +251,11 @@ func TestSurveyRepo_GetAll(t *testing.T) {
 		})
 		surveys, err := surveyRepo.GetAll()
 		assert.NoError(t, err)
-		assert.Equal(t, []models.Survey{survey1, survey2}, surveys)
+		assert.EqualValues(t, []models.Survey{survey1, survey2}, surveys)
 	})
 	t.Run("should return error if no surveys are found", func(t *testing.T) {
 		surveyRepo := NewSurveyRepo(nil)
-		newSurvey, err := surveyRepo.Get(ksuid.New())
+		newSurvey, err := surveyRepo.GetAll()
 		assert.Equal(t, repositories.ErrNotFound, err)
 		assert.Nil(t, newSurvey)
 	})

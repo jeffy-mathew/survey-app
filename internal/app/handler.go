@@ -33,9 +33,7 @@ func NewSurveyApp(persistence db.DB, surveyService services.SurveyServiceInterfa
 
 func (a *SurveyApp) SetupRoutes() *gin.Engine {
 	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		c.JSONP(http.StatusCreated, Response{Message: "service is up"})
-	})
+	router.GET("/", a.HealthCheck)
 	surveyRouter := router.Group("/survey")
 	{
 		surveyRouter.GET("/", a.GetAllSurveys)
@@ -50,6 +48,10 @@ func (a *SurveyApp) SetupRoutes() *gin.Engine {
 		responseRouter.GET("/", a.GetResponses)
 	}
 	return router
+}
+
+func (a *SurveyApp) HealthCheck(c *gin.Context) {
+	c.JSONP(http.StatusOK, Response{Message: "service is up"})
 }
 
 // CreateSurvey is the http handler function for handling the request
@@ -156,7 +158,11 @@ func (a *SurveyApp) SaveResponse(c *gin.Context) {
 		return
 	}
 	_, err = a.surveyService.SaveResponse(response)
-	if err != nil {
+	if err != nil && err == repositories.ErrNotFound {
+		log.Println("survey not found while saving response", response.SurveyID.String())
+		c.JSONP(http.StatusNotFound, Response{Message: "error while saving response " + err.Error()})
+		return
+	} else if err != nil {
 		log.Println("error while saving survey response", err)
 		c.JSONP(http.StatusInternalServerError, Response{Message: "error while saving survey response " + err.Error()})
 		return
@@ -172,9 +178,13 @@ func (a *SurveyApp) GetResponses(c *gin.Context) {
 		return
 	}
 	responses, err := a.surveyService.GetResponses(id)
-	if err != nil {
-		log.Println("error while getting responses for survey", err)
-		c.JSONP(http.StatusInternalServerError, Response{Message: "error while reading responses"})
+	if err != nil && err == repositories.ErrNotFound {
+		log.Println("survey not found while fetching responses", id.String())
+		c.JSONP(http.StatusNotFound, Response{Message: "error while fetching responses " + err.Error()})
+		return
+	} else if err != nil {
+		log.Println("error while fetching responses for survey", err)
+		c.JSONP(http.StatusInternalServerError, Response{Message: "error while fetching responses"})
 		return
 	}
 	c.JSONP(http.StatusOK, Response{Message: "success", Data: responses})

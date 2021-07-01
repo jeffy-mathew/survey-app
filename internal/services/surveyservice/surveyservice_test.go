@@ -8,6 +8,8 @@ import (
 	"survey-platform/internal/models"
 	"survey-platform/internal/repositories"
 	"survey-platform/internal/repositories/repositories_mock"
+	"survey-platform/pkg/idgenerator/idgenerator_mock"
+	"survey-platform/pkg/timegenerator/timegenerator_mock"
 	"testing"
 	"time"
 )
@@ -17,21 +19,34 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
+		surveyID, qID1, qID2 := ksuid.New(), ksuid.New(), ksuid.New()
+		idGeneratorMock := idgenerator_mock.NewMockIDGenerator(ctrl)
+		gomock.InOrder(
+			idGeneratorMock.EXPECT().Generate().Return(surveyID),
+			idGeneratorMock.EXPECT().Generate().Return(qID1),
+			idGeneratorMock.EXPECT().Generate().Return(qID2),
+		)
+		now := time.Now()
 		survey := models.Survey{
+			ID:        surveyID,
 			Name:      "new survey",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			CreatedAt: now,
+			UpdatedAt: now,
 			Questions: []models.Question{
 				{
+					ID:       qID1,
 					Question: "is this place good?",
 				},
 				{
+					ID:       qID2,
 					Question: "does this place has parking?",
 				},
 			}}
 		mockSurveyRepo.EXPECT().Create(&survey).Return(&survey, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
-		createdSurvey, err := surveyService.CreateSurvey(&survey)
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
+		createdSurvey, err := surveyService.CreateSurvey(survey)
 		assert.NoError(t, err)
 		assert.Equal(t, survey, *createdSurvey)
 	})
@@ -40,21 +55,34 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
+		now := time.Now()
+		surveyID, qID1, qID2 := ksuid.New(), ksuid.New(), ksuid.New()
+		idGeneratorMock := idgenerator_mock.NewMockIDGenerator(ctrl)
+		gomock.InOrder(
+			idGeneratorMock.EXPECT().Generate().Return(surveyID),
+			idGeneratorMock.EXPECT().Generate().Return(qID1),
+			idGeneratorMock.EXPECT().Generate().Return(qID2),
+		)
 		survey := models.Survey{
 			Name:      "new survey",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			ID:        surveyID,
+			CreatedAt: now,
+			UpdatedAt: now,
 			Questions: []models.Question{
 				{
+					ID:       qID1,
 					Question: "is this place good?",
 				},
 				{
+					ID:       qID2,
 					Question: "does this place has parking?",
 				},
 			}}
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
 		mockSurveyRepo.EXPECT().Create(&survey).Return(nil, errors.New("something went wrong"))
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
-		createdSurvey, err := surveyService.CreateSurvey(&survey)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
+		createdSurvey, err := surveyService.CreateSurvey(survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -78,8 +106,8 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 					Question: "does this place offer dine in?",
 				},
 			}}
-		surveyService := NewSurveyService(3, nil, nil)
-		createdSurvey, err := surveyService.CreateSurvey(&survey)
+		surveyService := NewSurveyService(3, nil, nil, nil, nil)
+		createdSurvey, err := surveyService.CreateSurvey(survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -90,8 +118,8 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 			Questions: []models.Question{}}
-		surveyService := NewSurveyService(3, nil, nil)
-		createdSurvey, err := surveyService.CreateSurvey(&survey)
+		surveyService := NewSurveyService(3, nil, nil, nil, nil)
+		createdSurvey, err := surveyService.CreateSurvey(survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -111,8 +139,8 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 					Question: "does this place serve coffee?",
 				},
 			}}
-		surveyService := NewSurveyService(3, nil, nil)
-		createdSurvey, err := surveyService.CreateSurvey(&survey)
+		surveyService := NewSurveyService(3, nil, nil, nil, nil)
+		createdSurvey, err := surveyService.CreateSurvey(survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -120,23 +148,40 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 	t.Run("should add survey id, question id and timestamps while creating survey", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+		now := time.Now()
+		surveyID, qID1, qID2, qID3 := ksuid.New(), ksuid.New(), ksuid.New(), ksuid.New()
+		idGeneratorMock := idgenerator_mock.NewMockIDGenerator(ctrl)
+		gomock.InOrder(
+			idGeneratorMock.EXPECT().Generate().Return(surveyID),
+			idGeneratorMock.EXPECT().Generate().Return(qID1),
+			idGeneratorMock.EXPECT().Generate().Return(qID2),
+			idGeneratorMock.EXPECT().Generate().Return(qID3),
+		)
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
 		survey := models.Survey{
-			Name: "new survey",
+			Name:      "new survey",
+			ID:        surveyID,
+			CreatedAt: now,
+			UpdatedAt: now,
 			Questions: []models.Question{
 				{
+					ID:       qID1,
 					Question: "is this place good?",
 				},
 				{
+					ID:       qID2,
 					Question: "does this place has parking?",
 				},
 				{
+
 					Question: "does this place serve coffee?",
 				},
 			}}
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Create(&survey).Return(&survey, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
-		createdSurvey, err := surveyService.CreateSurvey(&survey)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
+		createdSurvey, err := surveyService.CreateSurvey(survey)
 		assert.NoError(t, err)
 		assert.NotNil(t, createdSurvey.ID)
 		assert.NotNil(t, createdSurvey.Questions[0].ID)
@@ -167,7 +212,7 @@ func TestSurveyService_GetSurvey(t *testing.T) {
 			},
 		}
 		mockSurveyRepo.EXPECT().Get(survey.ID).Return(&survey, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, nil)
 		returnedSurvey, err := surveyService.GetSurvey(survey.ID)
 		assert.NoError(t, err)
 		assert.Equal(t, survey, *returnedSurvey)
@@ -178,7 +223,7 @@ func TestSurveyService_GetSurvey(t *testing.T) {
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		surveyID := ksuid.New()
 		mockSurveyRepo.EXPECT().Get(surveyID).Return(nil, errors.New("something went wrong"))
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, nil)
 		returnedSurvey, err := surveyService.GetSurvey(surveyID)
 		assert.Error(t, err)
 		assert.Nil(t, returnedSurvey)
@@ -192,10 +237,13 @@ func TestSurveyService_UpdateSurvey(t *testing.T) {
 		surveyID := ksuid.New()
 		q1ID := ksuid.New()
 		q2ID := ksuid.New()
+		now := time.Now()
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
 		survey := models.Survey{
 			ID:        surveyID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			CreatedAt: now,
+			UpdatedAt: now,
 			Questions: []models.Question{
 				{
 					ID:       q1ID,
@@ -208,10 +256,12 @@ func TestSurveyService_UpdateSurvey(t *testing.T) {
 			},
 		}
 		oldSurvey := survey
+		oldSurvey.UpdatedAt = now.AddDate(0, 0, -1)
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Update(surveyID, &survey).Return(&survey, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
-		updatedSurvey, err := surveyService.UpdateSurvey(surveyID, &survey)
+		idGeneratorMock := idgenerator_mock.NewMockIDGenerator(ctrl)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
+		updatedSurvey, err := surveyService.UpdateSurvey(surveyID, oldSurvey)
 		assert.NoError(t, err)
 		assert.NotEqual(t, oldSurvey.UpdatedAt, updatedSurvey.UpdatedAt)
 	})
@@ -220,10 +270,13 @@ func TestSurveyService_UpdateSurvey(t *testing.T) {
 		defer ctrl.Finish()
 		surveyID := ksuid.New()
 		q1ID := ksuid.New()
+		now := time.Now()
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
 		survey := models.Survey{
 			ID:        surveyID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			CreatedAt: now,
+			UpdatedAt: now,
 			Questions: []models.Question{
 				{
 					ID:       q1ID,
@@ -235,10 +288,14 @@ func TestSurveyService_UpdateSurvey(t *testing.T) {
 			},
 		}
 		oldSurvey := survey
+		oldSurvey.UpdatedAt = now.AddDate(0, 0, -1)
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Update(surveyID, &survey).Return(&survey, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
-		updatedSurvey, err := surveyService.UpdateSurvey(surveyID, &survey)
+		qID2 := ksuid.New()
+		idGeneratorMock := idgenerator_mock.NewMockIDGenerator(ctrl)
+		idGeneratorMock.EXPECT().Generate().Return(qID2)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
+		updatedSurvey, err := surveyService.UpdateSurvey(surveyID, oldSurvey)
 		assert.NoError(t, err)
 		assert.NotEqual(t, oldSurvey.UpdatedAt, updatedSurvey.UpdatedAt)
 		assert.False(t, updatedSurvey.Questions[1].ID.IsNil())
@@ -249,10 +306,13 @@ func TestSurveyService_UpdateSurvey(t *testing.T) {
 		surveyID := ksuid.New()
 		q1ID := ksuid.New()
 		q2ID := ksuid.New()
+		now := time.Now()
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
 		survey := models.Survey{
 			ID:        surveyID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			CreatedAt: now,
+			UpdatedAt: now,
 			Questions: []models.Question{
 				{
 					ID:       q1ID,
@@ -265,10 +325,11 @@ func TestSurveyService_UpdateSurvey(t *testing.T) {
 			},
 		}
 		oldSurvey := survey
+		oldSurvey.UpdatedAt = now.AddDate(0, 0, -1)
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Update(surveyID, &survey).Return(&survey, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
-		updatedSurvey, err := surveyService.UpdateSurvey(surveyID, &survey)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, timeGeneratorMock)
+		updatedSurvey, err := surveyService.UpdateSurvey(surveyID, oldSurvey)
 		assert.NoError(t, err)
 		assert.NotEqual(t, oldSurvey.UpdatedAt, updatedSurvey.UpdatedAt)
 	})
@@ -281,7 +342,7 @@ func TestSurveyService_DeleteSurvey(t *testing.T) {
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		surveyID := ksuid.New()
 		mockSurveyRepo.EXPECT().Delete(surveyID).Return(nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, nil)
 		err := surveyService.DeleteSurvey(surveyID)
 		assert.NoError(t, err)
 	})
@@ -291,7 +352,7 @@ func TestSurveyService_DeleteSurvey(t *testing.T) {
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		surveyID := ksuid.New()
 		mockSurveyRepo.EXPECT().Delete(surveyID).Return(repositories.ErrNotFound)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, nil)
 		err := surveyService.DeleteSurvey(surveyID)
 		assert.Equal(t, repositories.ErrNotFound, err)
 	})
@@ -301,7 +362,7 @@ func TestSurveyService_GetAllSurveys(t *testing.T) {
 	t.Run("should successfully return all surveys", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mockSurveys := []models.Survey{models.Survey{
+		mockSurveys := []models.Survey{{
 			ID:        ksuid.New(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -315,7 +376,7 @@ func TestSurveyService_GetAllSurveys(t *testing.T) {
 					Question: "does this place has parking?",
 				},
 			},
-		}, models.Survey{
+		}, {
 			ID:        ksuid.New(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -332,7 +393,7 @@ func TestSurveyService_GetAllSurveys(t *testing.T) {
 		}}
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().GetAll().Return(mockSurveys, nil)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, nil)
 		surveys, err := surveyService.GetAllSurveys()
 		assert.NoError(t, err)
 		assert.Equal(t, mockSurveys, surveys)
@@ -342,7 +403,7 @@ func TestSurveyService_GetAllSurveys(t *testing.T) {
 		defer ctrl.Finish()
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().GetAll().Return(nil, repositories.ErrNotFound)
-		surveyService := NewSurveyService(3, mockSurveyRepo, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, nil, nil, nil)
 		surveys, err := surveyService.GetAllSurveys()
 		assert.Equal(t, repositories.ErrNotFound, err)
 		assert.Nil(t, surveys)
@@ -353,11 +414,14 @@ func TestSurveyService_SaveResponse(t *testing.T) {
 	t.Run("should successfully save response", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		surveyID, qID1, qID2 := ksuid.New(), ksuid.New(), ksuid.New()
+		surveyID, qID1, qID2, responseID := ksuid.New(), ksuid.New(), ksuid.New(), ksuid.New()
+		now := time.Now()
+		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
+		timeGeneratorMock.EXPECT().Now().Return(now)
 		mockResponse := models.Response{
-			ID:        ksuid.New(),
+			ID:        responseID,
 			SurveyID:  surveyID,
-			CreatedAt: time.Now(),
+			CreatedAt: now,
 			Answers: []models.Answer{
 				{
 					QuestionID: qID1,
@@ -371,8 +435,12 @@ func TestSurveyService_SaveResponse(t *testing.T) {
 		}
 		mockResponseRepo := repositories_mock.NewMockResponseRepoInterface(ctrl)
 		mockResponseRepo.EXPECT().Create(&mockResponse).Return(&mockResponse, nil)
-		surveyService := NewSurveyService(3, nil, mockResponseRepo)
-		response, err := surveyService.SaveResponse(&mockResponse)
+		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
+		mockSurveyRepo.EXPECT().Get(surveyID).Return(&models.Survey{}, nil)
+		mockIDGenerator := idgenerator_mock.NewMockIDGenerator(ctrl)
+		mockIDGenerator.EXPECT().Generate().Return(responseID)
+		surveyService := NewSurveyService(3, mockSurveyRepo, mockResponseRepo, mockIDGenerator, timeGeneratorMock)
+		response, err := surveyService.SaveResponse(mockResponse)
 		assert.NoError(t, err)
 		assert.Equal(t, mockResponse, *response)
 	})
@@ -405,8 +473,8 @@ func TestSurveyService_SaveResponse(t *testing.T) {
 		mockResponseRepo := repositories_mock.NewMockResponseRepoInterface(ctrl)
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Get(surveyID).Return(nil, repositories.ErrNotFound)
-		surveyService := NewSurveyService(3, mockSurveyRepo, mockResponseRepo)
-		response, err := surveyService.SaveResponse(&mockResponse)
+		surveyService := NewSurveyService(3, mockSurveyRepo, mockResponseRepo, nil, nil)
+		response, err := surveyService.SaveResponse(mockResponse)
 		assert.Equal(t, repositories.ErrNotFound, err)
 		assert.Nil(t, response)
 	})
@@ -438,8 +506,10 @@ func TestSurveyService_SaveResponse(t *testing.T) {
 			},
 		}
 		mockResponseRepo := repositories_mock.NewMockResponseRepoInterface(ctrl)
-		surveyService := NewSurveyService(3, nil, mockResponseRepo)
-		response, err := surveyService.SaveResponse(&mockResponse)
+		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
+		mockSurveyRepo.EXPECT().Get(surveyID).Return(&models.Survey{}, nil)
+		surveyService := NewSurveyService(3, mockSurveyRepo, mockResponseRepo, nil, nil)
+		response, err := surveyService.SaveResponse(mockResponse)
 		assert.Error(t, err)
 		assert.Nil(t, response)
 	})
@@ -469,7 +539,7 @@ func TestSurveyService_GetResponses(t *testing.T) {
 			},
 		}
 		mockResponseRepo.EXPECT().GetBySurveyID(surveyID).Return(mockResponses, nil)
-		surveyService := NewSurveyService(3, nil, mockResponseRepo)
+		surveyService := NewSurveyService(3, nil, mockResponseRepo, nil, nil)
 		responses, err := surveyService.GetResponses(surveyID)
 		assert.NoError(t, err)
 		assert.Equal(t, mockResponses, responses)
@@ -480,7 +550,8 @@ func TestSurveyService_GetResponses(t *testing.T) {
 		mockResponseRepo := repositories_mock.NewMockResponseRepoInterface(ctrl)
 		surveyID := ksuid.New()
 		mockResponseRepo.EXPECT().GetBySurveyID(surveyID).Return(nil, repositories.ErrNotFound)
-		surveyService := NewSurveyService(3, nil, mockResponseRepo)
+
+		surveyService := NewSurveyService(3, nil, mockResponseRepo, nil, nil)
 		responses, err := surveyService.GetResponses(surveyID)
 		assert.Equal(t, repositories.ErrNotFound, err)
 		assert.Nil(t, responses)
@@ -521,7 +592,7 @@ func TestSurveyService_Dump(t *testing.T) {
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Entries().Return(surveyEntries)
 		mockResponseRepo.EXPECT().Entries().Return(responseEntries)
-		surveyService := NewSurveyService(3, mockSurveyRepo, mockResponseRepo)
+		surveyService := NewSurveyService(3, mockSurveyRepo, mockResponseRepo, nil, nil)
 		repoEntries := surveyService.Entries()
 		assert.Equal(t, models.DBEntry{Surveys: surveyEntries, Responses: responseEntries}, *repoEntries)
 	})

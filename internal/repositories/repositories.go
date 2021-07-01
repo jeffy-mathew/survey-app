@@ -1,6 +1,6 @@
 package repositories
 
-//go:generate mockgen -source=repositories.go -destination=./repositories_mock/repositories_mock.go -package=repositories_
+//go:generate mockgen -source=repositories.go -destination=./repositories_mock/repositories_mock.go -package=repositories_mock
 
 import (
 	"errors"
