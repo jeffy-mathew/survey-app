@@ -65,7 +65,7 @@ func (a *SurveyApp) CreateSurvey(c *gin.Context) {
 		c.JSONP(http.StatusUnprocessableEntity, Response{Message: "malformed body", ApiVersion: ApiVersion})
 		return
 	}
-	newSurvey, err := a.surveyService.CreateSurvey(survey)
+	newSurvey, err := a.surveyService.CreateSurvey(&survey)
 	if err != nil {
 		log.Println("error while reading survey body", err)
 		c.JSONP(http.StatusInternalServerError, Response{Message: "error while creating survey " + err.Error(), ApiVersion: ApiVersion})

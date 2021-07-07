@@ -46,7 +46,7 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 		timeGeneratorMock := timegenerator_mock.NewMockTimeGenInterface(ctrl)
 		timeGeneratorMock.EXPECT().Now().Return(now)
 		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
-		createdSurvey, err := surveyService.CreateSurvey(survey)
+		createdSurvey, err := surveyService.CreateSurvey(&survey)
 		assert.NoError(t, err)
 		assert.Equal(t, survey, *createdSurvey)
 	})
@@ -82,7 +82,7 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 		timeGeneratorMock.EXPECT().Now().Return(now)
 		mockSurveyRepo.EXPECT().Create(&survey).Return(nil, errors.New("something went wrong"))
 		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
-		createdSurvey, err := surveyService.CreateSurvey(survey)
+		createdSurvey, err := surveyService.CreateSurvey(&survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -107,7 +107,7 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 				},
 			}}
 		surveyService := NewSurveyService(3, nil, nil, nil, nil)
-		createdSurvey, err := surveyService.CreateSurvey(survey)
+		createdSurvey, err := surveyService.CreateSurvey(&survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -119,7 +119,7 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 			UpdatedAt: time.Now(),
 			Questions: []models.Question{}}
 		surveyService := NewSurveyService(3, nil, nil, nil, nil)
-		createdSurvey, err := surveyService.CreateSurvey(survey)
+		createdSurvey, err := surveyService.CreateSurvey(&survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -140,7 +140,7 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 				},
 			}}
 		surveyService := NewSurveyService(3, nil, nil, nil, nil)
-		createdSurvey, err := surveyService.CreateSurvey(survey)
+		createdSurvey, err := surveyService.CreateSurvey(&survey)
 		assert.Error(t, err)
 		assert.Nil(t, createdSurvey)
 	})
@@ -181,7 +181,7 @@ func TestSurveyService_CreateSurvey(t *testing.T) {
 		mockSurveyRepo := repositories_mock.NewMockSurveyRepoInterface(ctrl)
 		mockSurveyRepo.EXPECT().Create(&survey).Return(&survey, nil)
 		surveyService := NewSurveyService(3, mockSurveyRepo, nil, idGeneratorMock, timeGeneratorMock)
-		createdSurvey, err := surveyService.CreateSurvey(survey)
+		createdSurvey, err := surveyService.CreateSurvey(&survey)
 		assert.NoError(t, err)
 		assert.NotNil(t, createdSurvey.ID)
 		assert.NotNil(t, createdSurvey.Questions[0].ID)

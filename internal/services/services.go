@@ -8,7 +8,7 @@ import (
 )
 
 type SurveyServiceInterface interface {
-	CreateSurvey(survey models.Survey) (*models.Survey, error)
+	CreateSurvey(survey *models.Survey) (*models.Survey, error)
 	GetSurvey(id ksuid.KSUID) (*models.Survey, error)
 	UpdateSurvey(id ksuid.KSUID, survey models.Survey) (*models.Survey, error)
 	DeleteSurvey(id ksuid.KSUID) error

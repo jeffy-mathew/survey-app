@@ -31,7 +31,7 @@ func NewSurveyService(maxQuestions int, surveyRepo repositories.SurveyRepoInterf
 	}
 }
 
-func (s *SurveyService) CreateSurvey(survey models.Survey) (*models.Survey, error) {
+func (s *SurveyService) CreateSurvey(survey *models.Survey) (*models.Survey, error) {
 	if len(survey.Questions) > s.maxQuestions {
 		return nil, errors.New("survey cannot have more than 3 questions")
 	}
@@ -49,7 +49,7 @@ func (s *SurveyService) CreateSurvey(survey models.Survey) (*models.Survey, erro
 	survey.Questions = questions
 	now := s.timeGenerator.Now()
 	survey.CreatedAt, survey.UpdatedAt = now, now
-	return s.surveyRepo.Create(&survey)
+	return s.surveyRepo.Create(survey)
 }
 
 func (s *SurveyService) GetSurvey(id ksuid.KSUID) (*models.Survey, error) {

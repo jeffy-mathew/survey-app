@@ -45,7 +45,7 @@ func TestSurveyApp_CreateSurvey(t *testing.T) {
 			},
 		}
 		mockService := services_mock.NewMockSurveyServiceInterface(ctrl)
-		mockService.EXPECT().CreateSurvey(mockSurvey).Return(&mockSurvey, nil)
+		mockService.EXPECT().CreateSurvey(&mockSurvey).SetArg(0, mockSurvey).Return(&mockSurvey, nil)
 		surveyApp := NewSurveyApp(nil, mockService)
 		router := surveyApp.SetupRoutes()
 		marshalledSurvey, _ := json.Marshal(&mockSurvey)

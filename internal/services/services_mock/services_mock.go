@@ -36,7 +36,7 @@ func (m *MockSurveyServiceInterface) EXPECT() *MockSurveyServiceInterfaceMockRec
 }
 
 // CreateSurvey mocks base method.
-func (m *MockSurveyServiceInterface) CreateSurvey(survey models.Survey) (*models.Survey, error) {
+func (m *MockSurveyServiceInterface) CreateSurvey(survey *models.Survey) (*models.Survey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSurvey", survey)
 	ret0, _ := ret[0].(*models.Survey)
