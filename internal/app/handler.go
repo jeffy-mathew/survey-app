@@ -3,8 +3,11 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/segmentio/ksuid"
+	swaggerFiles "github.com/swaggo/files"     // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 	"log"
 	"net/http"
+	_ "survey-platform/docs"
 	"survey-platform/internal/db"
 	"survey-platform/internal/models"
 	"survey-platform/internal/repositories"
@@ -33,6 +36,22 @@ func NewSurveyApp(persistence db.DB, surveyService services.SurveyServiceInterfa
 	}
 }
 
+// @title Survey app API
+// @version 1.0
+// @description maintains survey CRUD
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /api/v1
+// @query.collection.format multi
+
 func (a *SurveyApp) SetupRoutes() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", a.HealthCheck)
@@ -49,14 +68,32 @@ func (a *SurveyApp) SetupRoutes() *gin.Engine {
 		responseRouter.POST("/", a.SaveResponse)
 		responseRouter.GET("/", a.GetResponses)
 	}
+	router.GET("/swagger/*any", ginSwagger.DisablingWrapHandler(swaggerFiles.Handler, "NAME_OF_ENV_VARIABLE"))
 	return router
 }
 
+// HealthCheck godoc
+// @Summary Check app health
+// @Description check app health by hitting at root
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} Response
+// @Failure 500 {object} Response
+// @Router / [get]
 func (a *SurveyApp) HealthCheck(c *gin.Context) {
 	c.JSONP(http.StatusOK, Response{Message: "service is up", ApiVersion: ApiVersion})
 }
 
-// CreateSurvey is the http handler function for handling the request
+// CreateSurvey godoc
+// @Summary creates survey
+// @Description creates a survey
+// @Accept  json
+// @Produce  json
+// @Param survey body models.Survey true "survey"
+// @success 201 {object} Response{data=models.Survey} "desc"
+// @Failure 500 {object} Response
+// @Failure 422 {object} Response
+// @Router /survey/ [post]
 func (a *SurveyApp) CreateSurvey(c *gin.Context) {
 	var survey models.Survey
 	err := c.ShouldBindJSON(&survey)

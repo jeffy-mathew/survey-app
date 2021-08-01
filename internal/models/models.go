@@ -6,16 +6,16 @@ import (
 )
 
 type Survey struct {
-	ID        ksuid.KSUID `json:"id"`
-	Name      string      `json:"name"`
+	ID        ksuid.KSUID `json:"id" example:"-"`
+	Name      string      `json:"name" example:"account name"`
 	Questions []Question  `json:"questions"`
-	CreatedAt time.Time   `json:"created_at"`
-	UpdatedAt time.Time   `json:"updated_at"`
+	CreatedAt time.Time   `json:"created_at" example:"-"`
+	UpdatedAt time.Time   `json:"updated_at" example:"-"`
 }
 
 type Question struct {
-	ID       ksuid.KSUID `json:"id"`
-	Question string      `json:"question"`
+	ID       ksuid.KSUID `json:"id" example:"ksuid"`
+	Question string      `json:"question" example:"question"`
 }
 
 type Answer struct {

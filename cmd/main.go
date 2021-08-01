@@ -21,7 +21,7 @@ import (
 
 const (
 	AppPortEnv  = "APP_PORT"
-	AppPort     = ":8000"
+	AppPort     = ":8080"
 	surveyAppDB = "survey_app.json"
 )
 

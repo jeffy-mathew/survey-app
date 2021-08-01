@@ -53,6 +53,13 @@ This will build docker and run application in a docker container.
 Port mapping is done from `8000:8000`
 In case need to change the port on host, change the first argument to the required port, like `9000:8000`
 
+
+### Swagger Docs
+ ``` 
+ swag init -g cmd/main.go
+ ```
+Run server and go to http://localhost:8080/swagger/index.html from browser
+
 ### NOTE
 No particular database is used for this application. 
 On application exit, the current data is dumped to a json file 

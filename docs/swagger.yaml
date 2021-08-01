@@ -1,0 +1,93 @@
+definitions:
+  app.Response:
+    properties:
+      api_version:
+        type: string
+      data:
+        type: object
+      success:
+        type: string
+    type: object
+  models.Question:
+    properties:
+      id:
+        example: ksuid
+        type: string
+      question:
+        example: question
+        type: string
+    type: object
+  models.Survey:
+    properties:
+      created_at:
+        example: '-'
+        type: string
+      id:
+        example: '-'
+        type: string
+      name:
+        example: account name
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/models.Question'
+        type: array
+      updated_at:
+        example: '-'
+        type: string
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: check app health by hitting at root
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Check app health
+  /survey/:
+    post:
+      consumes:
+      - application/json
+      description: creates a survey
+      parameters:
+      - description: survey
+        in: body
+        name: survey
+        required: true
+        schema:
+          $ref: '#/definitions/models.Survey'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: desc
+          schema:
+            allOf:
+            - $ref: '#/definitions/app.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Survey'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/app.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: creates survey
+swagger: "2.0"
