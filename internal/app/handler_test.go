@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/segmentio/ksuid"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"survey-platform/internal/db/db_mock"
@@ -16,6 +13,10 @@ import (
 	"survey-platform/internal/services/services_mock"
 	"testing"
 	"time"
+
+	"github.com/golang/mock/gomock"
+	"github.com/segmentio/ksuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSurveyApp_HealthCheck(t *testing.T) {
@@ -70,7 +71,7 @@ func TestSurveyApp_CreateSurvey(t *testing.T) {
 			},
 		}
 		mockService := services_mock.NewMockSurveyServiceInterface(ctrl)
-		mockService.EXPECT().CreateSurvey(mockSurvey).Return(nil, errors.New("something went wrong"))
+		mockService.EXPECT().CreateSurvey(&mockSurvey).Return(nil, errors.New("something went wrong")).SetArg(0, mockSurvey)
 		surveyApp := NewSurveyApp(nil, mockService)
 		router := surveyApp.SetupRoutes()
 		marshalledSurvey, _ := json.Marshal(&mockSurvey)
